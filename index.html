@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>林語堂生活公式：16型人格測驗</title>
+    
+    <!-- SEO & Social Media Meta Tags -->
+    <meta name="description" content="現實減夢想等於禽獸，現實加夢想加幽默等於智慧。本測驗致敬林語堂《生活的藝術》，透過 R+D+H+S 四大維度，調配出專屬於你的靈魂方程式，解析 16 種獨特的生活姿態。">
+    <meta name="keywords" content="林語堂, 生活的藝術, 心理測驗, 人格分析, 16型人格, 文學, 哲學">
+    <meta name="author" content="Life Formula Project">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://你的帳號.github.io/life-formula/">
+    <meta property="og:title" content="林語堂生活公式：探索你的靈魂化學配方">
+    <meta property="og:description" content="生活是一場微妙的化學實驗。測測看你的「現實、夢想、幽默、敏感」指數是多少？找出屬於你的生活哲學。">
+    <meta property="og:image" content="https://ui-avatars.com/api/?name=Life+Formula&background=FDF8F5&color=5D4037&size=512">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="林語堂生活公式：探索你的靈魂化學配方">
+    <meta property="twitter:description" content="現實減夢想等於禽獸，現實加夢想加幽默等於智慧。立即體驗 16 型生活人格測驗。">
+
     <style>
         :root {
             /* 溫暖書籍/咖啡廳主題配色 */
@@ -19,6 +37,7 @@
             --accent-s: #EC5E6D; /* 敏感 - 珊瑚紅 */
             
             --success: #2E7D73;
+            --warning: #F59E0B;
             --radius-lg: 24px;
             --radius-md: 16px;
             /* 陰影改為暖棕色調 */
@@ -258,7 +277,7 @@
             font-size: 20px;
             line-height: 1.6;
             font-weight: 700;
-            margin-bottom: 40px; /* 增加底部間距讓版面更平衡 */
+            margin-bottom: 32px;
             color: var(--text-primary);
         }
 
@@ -289,9 +308,21 @@
             opacity: 0.6;
         }
 
-        .option-btn:hover, .option-btn:active {
+        .option-btn:hover {
             background: var(--surface-hover);
             border-color: #D7CCC8;
+        }
+
+        /* Selected State */
+        .option-btn.selected {
+            background: #EFEBE9;
+            border-color: var(--text-primary);
+            box-shadow: 0 0 0 1px var(--text-primary);
+        }
+        
+        .option-btn.selected .option-score {
+            background: var(--text-primary);
+            color: #fff;
         }
 
         .option-score {
@@ -306,6 +337,77 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
+        }
+
+        /* Navigation Buttons (Prev/Skip) */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+            gap: 12px;
+        }
+
+        .btn-nav {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-nav:hover:not(:disabled) {
+            background: var(--surface-warm);
+            color: var(--text-primary);
+        }
+
+        .btn-nav:disabled {
+            color: #D7CCC8;
+            cursor: default;
+        }
+
+        /* --- 確認頁 (Review Page) --- */
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .review-item {
+            aspect-ratio: 1;
+            background: #fff;
+            border: 1px solid var(--element-border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .review-item.answered {
+            background: var(--success);
+            color: #fff;
+            border-color: var(--success);
+        }
+
+        .review-item.skipped {
+            background: var(--surface-warm);
+            color: var(--text-primary);
+            border: 2px dashed var(--text-secondary);
+        }
+        
+        .review-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
 
         /* --- 結果頁 --- */
@@ -528,35 +630,63 @@
             
             <div class="question-card">
                 <div id="q-content">
-                    <!-- 移除了顯示類型的 q-tag -->
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                        QUESTION <span id="q-number">1</span> / <span id="q-total">16</span>
+                    </div>
                     <div id="q-text" class="question-text">題目載入中...</div>
                 </div>
                 
-                <div class="options-grid">
-                    <!-- 修改處：移除 inline style，讓它們統一使用 CSS class 的設定 -->
-                    <button class="option-btn" onclick="answer(1)">
+                <div class="options-grid" id="options-container">
+                    <button class="option-btn" onclick="answer(1)" data-val="1">
                         非常不符合 <span class="option-score">1</span>
                     </button>
-                    <button class="option-btn" onclick="answer(2)">
+                    <button class="option-btn" onclick="answer(2)" data-val="2">
                         有點不符合 <span class="option-score">2</span>
                     </button>
-                    <button class="option-btn" onclick="answer(3)">
+                    <button class="option-btn" onclick="answer(3)" data-val="3">
                         有點符合 <span class="option-score">3</span>
                     </button>
-                    <button class="option-btn" onclick="answer(4)">
+                    <button class="option-btn" onclick="answer(4)" data-val="4">
                         非常符合 <span class="option-score">4</span>
                     </button>
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-nav" id="btn-prev" onclick="prevQuestion()">← 上一題</button>
+                    <button class="btn-nav" id="btn-skip" onclick="skipQuestion()">跳過此題 →</button>
                 </div>
             </div>
         </div>
 
-        <!-- 3. Loading Page -->
+        <!-- 3. Review Page (New) -->
+        <div id="page-review" class="page">
+            <div class="intro-card" style="justify-content: flex-start; padding-top: 40px; overflow-y: auto;">
+                <h2 style="font-size: 24px; margin-bottom: 12px;">答題確認</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">
+                    請確認您的答題狀況。點擊題號可返回修改。<br>
+                    <span style="color:var(--success)">● 已答</span> / <span style="color:var(--text-primary)">○ 未答</span>
+                </p>
+
+                <div id="review-grid" class="review-grid">
+                    <!-- JS Injected -->
+                </div>
+
+                <div id="review-alert" style="color: #E53935; font-size: 13px; margin-bottom: 16px; display: none;">
+                    還有題目未完成，請先完成所有題目！
+                </div>
+
+                <button class="btn" onclick="calculateAndShowResult()">確認提交</button>
+                <button class="btn btn-outline" onclick="backToQuizFromReview()">返回繼續作答</button>
+            </div>
+        </div>
+
+        <!-- 4. Loading Page -->
         <div id="page-loading" class="page" style="justify-content: center; align-items: center;">
             <div class="loader"></div>
             <p style="margin-top: 24px; color: var(--text-secondary); font-weight: 500;">正在調配化學公式...</p>
         </div>
 
-        <!-- 4. Result Page -->
+        <!-- 5. Result Page -->
         <div id="page-result" class="page">
             <div class="result-scroll">
                 <div class="result-card">
@@ -622,7 +752,7 @@
             </div>
         </div>
 
-        <!-- 5. Gallery Page -->
+        <!-- 6. Gallery Page -->
         <div id="page-gallery" class="page">
             <div style="flex:1; overflow-y:auto; padding-bottom:80px;">
                 <h2 style="margin-bottom:16px;">全類型圖鑑 (16型)</h2>
@@ -638,35 +768,35 @@
     </div>
 
     <script>
-        // --- 1. Data: Questions (已擴充至16題，並恢復描述性風格) ---
-        // 原始12題 + 新增4題
+        // --- 1. Data: Questions ---
         const rawQuestions = [
             // R: 現實感
             { type: 'R', text: "比起抽象的理論或願景，我更在意這件事能不能賺錢，或對生活有沒有實際幫助。" },
             { type: 'R', text: "遇到問題時，我習慣先考慮風險和執行難度，而不是先談論理想狀況。" },
             { type: 'R', text: "我擅長處理生活瑣事（如記帳、家務、行程安排），並覺得這能帶來踏實感。" },
-            { type: 'R', text: "我認為『識時務者為俊傑』，在不可抗力面前，妥協往往比堅持更有智慧。" }, // 新增
+            { type: 'R', text: "我認為『識時務者為俊傑』，在不可抗力面前，妥協往往比堅持更有智慧。" },
             
             // D: 夢想
             { type: 'D', text: "我常對現狀感到不滿，總覺得社會制度或周遭環境應該要徹底改變。" },
             { type: 'D', text: "我很容易被宏大的使命、熱血的口號或完美的烏托邦願景所感動。" },
             { type: 'D', text: "為了追求心中的理想，即使要付出巨大的代價或走彎路，我也在所不惜。" },
-            { type: 'D', text: "我經常想像如果歷史走向不同，或是如果有一種新的科技，世界會變得多麼美好。" }, // 新增
+            { type: 'D', text: "我經常想像如果歷史走向不同，或是如果有一種新的科技，世界會變得多麼美好。" },
 
             // H: 幽默
             { type: 'H', text: "當我犯蠢或跌倒時，我第一反應通常是覺得自己很好笑，而不是感到羞憤。" },
             { type: 'H', text: "我認為人生本來就帶點荒謬，太過正經嚴肅地看待一切是很累人的。" },
             { type: 'H', text: "在緊張或悲傷的氣氛中，我仍能看出事情滑稽或諷刺的一面，並讓心情放鬆。" },
-            { type: 'H', text: "我不喜歡那種這輩子連一次『傻事』都沒做過的正經人，完美往往意味著無趣。" }, // 新增
+            { type: 'H', text: "我不喜歡那種這輩子連一次『傻事』都沒做過的正經人，完美往往意味著無趣。" },
 
             // S: 敏感
             { type: 'S', text: "看到美麗的景色、藝術作品或感人的電影，我常會深受觸動甚至落淚。" },
             { type: 'S', text: "我對他人的情緒變化很敏感，常能察覺對方沒說出口的心事。" },
             { type: 'S', text: "我認為邏輯正確固然重要，但「美的感受」和「人情味」更不可或缺。" },
-            { type: 'S', text: "讀到一首好詩或聽到一段動人的旋律，會讓我整天的心情都染上那種色彩。" } // 新增
+            { type: 'S', text: "讀到一首好詩或聽到一段動人的旋律，會讓我整天的心情都染上那種色彩。" }
         ];
 
-        let questions = []; // Will be shuffled
+        let questions = []; 
+        let userAnswers = []; // Store user answers: [1, 3, 2, null, 4...]
 
         // --- 2. Data: 16 Types ---
         const archetypes = {
@@ -690,34 +820,28 @@
 
         // --- 3. Logic ---
         let currentQIndex = 0;
-        let scores = { R: 0, D: 0, H: 0, S: 0 };
-        const totalQ = rawQuestions.length;
         let userResultCode = "";
-        let isTransitioning = false; // Fix: Prevent multiple clicks
+        let isTransitioning = false; 
 
-        // Shuffle Array Helper
+        // Shuffle Helper
         function shuffle(array) {
-            let currentIndex = array.length,  randomIndex;
-            // While there remain elements to shuffle.
+            let currentIndex = array.length, randomIndex;
             while (currentIndex != 0) {
-                // Pick a remaining element.
                 randomIndex = Math.floor(Math.random() * currentIndex);
                 currentIndex--;
-                // And swap it with the current element.
-                [array[currentIndex], array[randomIndex]] = [
-                array[randomIndex], array[currentIndex]];
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
             }
             return array;
         }
 
         function startQuiz() {
-            // Reset state
+            // Init state
             currentQIndex = 0;
-            scores = { R: 0, D: 0, H: 0, S: 0 };
+            userAnswers = new Array(rawQuestions.length).fill(null);
             isTransitioning = false;
             
-            // Randomize questions
-            questions = shuffle([...rawQuestions]); // Copy and shuffle
+            // Randomize
+            questions = shuffle([...rawQuestions]); 
             
             switchPage('page-quiz');
             renderQuestion();
@@ -729,55 +853,137 @@
         }
 
         function renderQuestion() {
-            // Safety check for out of bounds
             if (currentQIndex >= questions.length) {
-                console.warn("Attempted to render question out of bounds");
+                showReviewPage();
                 return;
             }
 
             const q = questions[currentQIndex];
             
-            // 更新題目文字
+            // UI Text
             document.getElementById('q-text').innerText = q.text;
+            document.getElementById('q-number').innerText = currentQIndex + 1;
+            document.getElementById('q-total').innerText = questions.length;
             
-            // 移除了更新標籤 (tag) 的程式碼
-
-            const pct = (currentQIndex / totalQ) * 100;
+            // Progress Bar
+            const pct = (currentQIndex / questions.length) * 100;
             document.getElementById('progress-fill').style.width = `${pct}%`;
+
+            // Reset Options Selection
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                const val = parseInt(btn.getAttribute('data-val'));
+                // Highlight if answered
+                if (userAnswers[currentQIndex] === val) {
+                    btn.classList.add('selected');
+                }
+            });
+
+            // Nav Buttons State
+            document.getElementById('btn-prev').disabled = (currentQIndex === 0);
+            document.getElementById('btn-skip').innerText = (currentQIndex === questions.length - 1) ? "完成確認 →" : "跳過此題 →";
         }
 
         function answer(value) {
-            // Fix: Prevent double clicking
             if (isTransitioning) return;
             isTransitioning = true;
 
-            const q = questions[currentQIndex];
-            scores[q.type] += value;
+            // Save answer
+            userAnswers[currentQIndex] = value;
 
-            currentQIndex++;
-            if (currentQIndex < totalQ) {
-                const card = document.querySelector('.question-card');
-                card.style.transform = 'scale(0.99)';
-                card.style.opacity = '0.8';
-                
-                setTimeout(() => {
+            // Highlight selected immediately for feedback
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                if (parseInt(btn.getAttribute('data-val')) === value) btn.classList.add('selected');
+                else btn.classList.remove('selected');
+            });
+
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            setTimeout(() => {
+                if (currentQIndex < questions.length - 1) {
+                    currentQIndex++;
                     renderQuestion();
-                    card.style.transform = 'scale(1)';
-                    card.style.opacity = '1';
-                    isTransitioning = false; // Reset flag after transition
-                }, 150);
-            } else {
-                finishQuiz();
-                isTransitioning = false; // Reset flag
+                } else {
+                    showReviewPage();
+                }
+                isTransitioning = false;
+            }, 200); // Short delay
+        }
+
+        function prevQuestion() {
+            if (currentQIndex > 0) {
+                currentQIndex--;
+                renderQuestion();
             }
         }
 
-        function finishQuiz() {
-            switchPage('page-loading');
-            setTimeout(calculateAndShowResult, 1200);
+        function skipQuestion() {
+            // Keep answer as null (or whatever it was)
+            // Just move next
+            if (currentQIndex < questions.length - 1) {
+                currentQIndex++;
+                renderQuestion();
+            } else {
+                showReviewPage();
+            }
+        }
+
+        // --- Review Page Logic ---
+        function showReviewPage() {
+            const grid = document.getElementById('review-grid');
+            grid.innerHTML = "";
+            let answeredCount = 0;
+
+            userAnswers.forEach((ans, idx) => {
+                const item = document.createElement('div');
+                item.className = `review-item ${ans !== null ? 'answered' : 'skipped'}`;
+                item.innerText = idx + 1;
+                item.onclick = () => jumpToQuestion(idx);
+                grid.appendChild(item);
+                if (ans !== null) answeredCount++;
+            });
+
+            document.getElementById('review-alert').style.display = 'none';
+            switchPage('page-review');
+        }
+
+        function jumpToQuestion(idx) {
+            currentQIndex = idx;
+            switchPage('page-quiz');
+            renderQuestion();
+        }
+
+        function backToQuizFromReview() {
+            // Go to first unanswered, or last question if all answered
+            const firstUnanswered = userAnswers.indexOf(null);
+            if (firstUnanswered !== -1) {
+                currentQIndex = firstUnanswered;
+            } else {
+                currentQIndex = questions.length - 1;
+            }
+            switchPage('page-quiz');
+            renderQuestion();
         }
 
         function calculateAndShowResult() {
+            // Validate
+            if (userAnswers.includes(null)) {
+                document.getElementById('review-alert').style.display = 'block';
+                return; // Don't proceed
+            }
+
+            switchPage('page-loading');
+            
+            // Calculate Scores
+            let scores = { R: 0, D: 0, H: 0, S: 0 };
+            userAnswers.forEach((ans, idx) => {
+                const type = questions[idx].type;
+                scores[type] += ans;
+            });
+
+            // Logic same as before...
             // Max score per category is 4 * 4 = 16. Avg is sum / 4
             const avgR = scores.R / 4;
             const avgD = scores.D / 4;
@@ -792,20 +998,24 @@
             userResultCode = rChar + dChar + hChar + sChar;
             const resultData = archetypes[userResultCode];
 
-            document.getElementById('result-code').innerText = userResultCode.split('').join(' ');
-            document.getElementById('result-title').innerText = resultData.title;
-            document.getElementById('lin-quote').innerText = `${resultData.quote}`;
-            document.getElementById('desc-box').innerText = resultData.desc;
+            // Render
+            setTimeout(() => {
+                document.getElementById('result-code').innerText = userResultCode.split('').join(' ');
+                document.getElementById('result-title').innerText = resultData.title;
+                document.getElementById('lin-quote').innerText = `${resultData.quote}`;
+                document.getElementById('desc-box').innerText = resultData.desc;
 
-            updateStat('r', avgR);
-            updateStat('d', avgD);
-            updateStat('h', avgH);
-            updateStat('s', avgS);
-            drawRadar(avgR, avgD, avgH, avgS);
+                updateStat('r', avgR);
+                updateStat('d', avgD);
+                updateStat('h', avgH);
+                updateStat('s', avgS);
+                drawRadar(avgR, avgD, avgH, avgS);
 
-            switchPage('page-result');
+                switchPage('page-result');
+            }, 1200);
         }
 
+        // Stats & UI Helpers (Same as before)
         function updateStat(type, avg) {
             const pct = (avg / 4) * 100;
             document.getElementById(`score-${type}`).innerText = avg.toFixed(1);
@@ -829,20 +1039,18 @@
             document.getElementById('radar-poly').setAttribute('points', `${p1} ${p2} ${p3} ${p4}`);
         }
 
-        // --- Gallery Logic (Enhanced with Badges) ---
+        // --- Gallery Logic ---
         function showGallery() {
             const container = document.getElementById('gallery-container');
-            container.innerHTML = ""; // Clear existing
+            container.innerHTML = ""; 
 
             const codes = Object.keys(archetypes).sort();
 
             codes.forEach(code => {
                 const data = archetypes[code];
                 const isUser = (code === userResultCode);
-                const bgStyle = isUser ? "border: 2px solid var(--accent-r); background: #FAF5F2;" : ""; // Update highlight background
+                const bgStyle = isUser ? "border: 2px solid var(--accent-r); background: #FAF5F2;" : ""; 
                 
-                // Parse code for badges
-                // R/r D/d H/h S/s
                 const chars = code.split('');
                 const badgesHtml = chars.map(char => {
                     const isHigh = char === char.toUpperCase();
