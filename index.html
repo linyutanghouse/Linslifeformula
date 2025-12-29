@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>林語堂生活公式：16型人格測驗</title>
+    <style>
+        :root {
+            /* 溫暖書籍/咖啡廳主題配色 */
+            --bg-color: #FDF8F5;       /* 暖米白背景 */
+            --card-bg: #FFFFFF;        /* 純白卡片 */
+            --text-primary: #5D4037;   /* 深栗色/咖啡色字體 */
+            --text-secondary: #8D7B75; /* 暖灰棕色字體 */
+            
+            /* 調整為帶有暖調的強調色 */
+            --accent-r: #2E7D73; /* 現實 - 復古松石綠 (比冷藍更溫潤) */
+            --accent-d: #8E44AD; /* 夢想 - 葡萄紫 */
+            --accent-h: #F59E0B; /* 幽默 - 溫暖琥珀金 */
+            --accent-s: #EC5E6D; /* 敏感 - 珊瑚紅 */
+            
+            --success: #2E7D73;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            /* 陰影改為暖棕色調 */
+            --shadow: 0 10px 30px -5px rgba(93, 64, 55, 0.08), 0 8px 10px -6px rgba(93, 64, 55, 0.02);
+            --border: 1px solid #EFE6E1; /* 奶茶色邊框 */
+            
+            /* 通用暖灰背景 (用於按鈕、區塊) */
+            --surface-warm: #FAF5F2; 
+            --surface-hover: #F2E8E3;
+            --element-border: #E8DED8;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            height: 100vh;
+            /* 保持 body hidden，由 .page 負責捲動 */
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 容器 */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        /* 標題區 */
+        header {
+            text-align: left;
+            margin-bottom: 20px;
+            z-index: 10;
+            flex-shrink: 0; /* 防止標題被壓縮 */
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        p.subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* 頁面切換控制 */
+        .page {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            animation: fadeIn 0.4s ease-out;
+            position: relative; 
+            /* 修改：允許垂直捲動，解決小螢幕無法下滑的問題 */
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch; /* iOS 平滑捲動 */
+            padding-bottom: 20px; /* 底部留白 */
+        }
+        
+        /* 隱藏 Scrollbar 但保持功能 (Chrome/Safari/Webkit) */
+        .page::-webkit-scrollbar {
+            display: none;
+        }
+        /* 隱藏 Scrollbar (Firefox) */
+        .page {
+            scrollbar-width: none;
+        }
+
+        /* 特殊處理：結果頁和圖鑑頁因為有內部捲動區域，外層不捲動 */
+        #page-result.page, #page-gallery.page {
+            overflow-y: hidden;
+            padding-bottom: 0;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- 首頁 --- */
+        .intro-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            flex: 1; /* 佔滿剩餘空間，但允許被撐開 */
+            min-height: min-content; /* 確保內容不會被切掉 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--shadow);
+            border: var(--border);
+            margin-bottom: 20px;
+        }
+
+        .formula-display {
+            font-family: monospace;
+            background: var(--surface-warm);
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            margin-bottom: 24px;
+            border: 1px solid var(--element-border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .formula-row {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+        }
+        
+        .formula-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-right: 8px;
+            font-size: 12px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .f-text {
+            flex: 1;
+        }
+
+        /* 免責聲明樣式 */
+        .disclaimer {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--element-border);
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.6;
+            opacity: 0.8;
+            width: 100%;
+        }
+
+        /* --- 按鈕 --- */
+        .btn {
+            background: var(--text-primary);
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(93, 64, 55, 0.15);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn:hover {
+            background: #4E342E; /* Darker brown */
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--element-border);
+            color: var(--text-primary);
+            margin-top: 12px;
+            box-shadow: none;
+        }
+        
+        .btn-outline:hover {
+            border-color: #D7CCC8;
+            background: var(--surface-warm);
+        }
+
+        /* --- 測驗頁 --- */
+        .progress-bar {
+            height: 8px;
+            background: var(--element-border);
+            border-radius: 4px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 32px 24px;
+            flex: 1;
+            min-height: min-content; /* 確保不被壓縮 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 改為置中，因為沒有標籤了 */
+            position: relative;
+            box-shadow: var(--shadow);
+            border: var(--border);
+        }
+
+        /* 移除了 .q-tag 相關樣式 */
+
+        .question-text {
+            font-size: 20px;
+            line-height: 1.6;
+            font-weight: 700;
+            margin-bottom: 40px; /* 增加底部間距讓版面更平衡 */
+            color: var(--text-primary);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: var(--surface-warm);
+            border: 1px solid var(--element-border);
+            color: var(--text-primary);
+            padding: 18px;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer; /* Ensure pointer on desktop */
+        }
+        /* Disable interaction when disabled */
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .option-btn:hover, .option-btn:active {
+            background: var(--surface-hover);
+            border-color: #D7CCC8;
+        }
+
+        .option-score {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            /* 修改處：統一色調樣式 - 暖灰色 */
+            background: #E8DED8; 
+            color: var(--text-secondary);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* --- 結果頁 --- */
+        .result-scroll {
+            overflow-y: auto;
+            flex: 1;
+            padding-bottom: 100px; /* Space for fixed button */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .result-scroll::-webkit-scrollbar { display: none; }
+
+        .result-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+            border: var(--border);
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .type-code {
+            font-family: monospace;
+            font-size: 14px;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .type-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0 0 16px 0;
+            color: var(--text-primary);
+        }
+
+        /* 雷達圖容器 */
+        .radar-container {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 24px auto;
+            position: relative;
+        }
+        
+        .radar-svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 10px rgba(93, 64, 55, 0.1));
+        }
+
+        .lin-quote {
+            background: var(--surface-warm);
+            border-left: 4px solid var(--accent-h);
+            padding: 20px;
+            text-align: left;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 24px;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            background: var(--surface-warm);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            border: 1px solid var(--element-border);
+        }
+
+        .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 600;}
+        .stat-value { font-size: 18px; font-weight: bold; }
+        .stat-bar { height: 6px; width: 100%; background: var(--element-border); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+        .stat-fill { height: 100%; border-radius: 3px; }
+
+        .desc-box {
+            text-align: left;
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .action-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 24px;
+            background: rgba(253, 248, 245, 0.95); /* 配合背景色的半透明 */
+            backdrop-filter: blur(5px);
+            display: flex;
+            gap: 12px;
+            border-top: 1px solid var(--element-border);
+        }
+
+        /* --- 全圖鑑頁 (Gallery) --- */
+        .gallery-list {
+            padding-bottom: 20px;
+        }
+
+        .gallery-item {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--element-border);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .gallery-item:active { transform: scale(0.99); }
+        
+        .g-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .g-title { font-weight: 700; font-size: 17px; color: var(--text-primary); }
+        .g-badges { display: flex; gap: 4px; }
+        
+        /* 迷你標籤 */
+        .g-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            border-width: 1px;
+            border-style: solid;
+        }
+        
+        /* 實心代表高分，空心代表低分 */
+        .g-badge.high { color: #fff; }
+        .g-badge.low { background: transparent; }
+
+        .g-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 6px;}
+
+        /* Loading */
+        .loader {
+            border: 4px solid var(--element-border);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border-left-color: var(--accent-r);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 實心文字標籤 */
+        .txt-r { color: var(--accent-r); }
+        .txt-d { color: var(--accent-d); }
+        .txt-h { color: var(--accent-h); }
+        .txt-s { color: var(--accent-s); }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <h1>Life Formula</h1>
+            <p class="subtitle">林語堂生活公式：人格化學室</p>
+        </header>
+
+        <!-- 1. Start Page -->
+        <div id="page-start" class="page active">
+            <div class="intro-card">
+                <div class="formula-display">
+                    <div class="formula-row">
+                        <span class="formula-badge" style="background:var(--accent-r); color:#fff">R</span>
+                        <span class="f-text txt-r">Reality 現實</span>
+                    </div>
+                    <div class="formula-row">+</div>
+                    <div class="formula-row">
+                        <span class="formula-badge" style="background:var(--accent-d); color:#fff">D</span>
+                        <span class="f-text txt-d">Dreams 夢想</span>
+                    </div>
+                    <div class="formula-row">+</div>
+                    <div class="formula-row">
+                        <span class="formula-badge" style="background:var(--accent-h); color:#fff">H</span>
+                        <span class="f-text txt-h">Humor 幽默</span>
+                    </div>
+                    <div class="formula-row">+</div>
+                    <div class="formula-row">
+                        <span class="formula-badge" style="background:var(--accent-s); color:#fff">S</span>
+                        <span class="f-text txt-s">Sensibility 敏感</span>
+                    </div>
+                    <div class="formula-row" style="margin-top:8px; border-top: 1px dashed #D7CCC8; padding-top:8px;">
+                        <span class="f-text" style="text-align:right; font-size:16px;">= Your Type ?</span>
+                    </div>
+                </div>
+                
+                <p style="color: var(--text-secondary); line-height: 1.6; text-align: center; font-size: 15px; margin-bottom: 32px;">
+                    「現實減夢想等於禽獸，現實加夢想加幽默等於智慧。」<br><br>
+                    透過林語堂先生的公式，找出你靈魂的化學配方，看看你是哪一種生活家。
+                </p>
+                
+                <button class="btn" onclick="startQuiz()">開始分析</button>
+
+                <!-- 新增免責聲明 -->
+                <div class="disclaimer">
+                    ⚠️ 聲明：本測驗靈感取自林語堂《生活的藝術》，<br>僅供推廣文學與生活哲學之用，並非專業心理評估工具，<br>結果僅供娛樂與參考。
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Quiz Page -->
+        <div id="page-quiz" class="page">
+            <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+            
+            <div class="question-card">
+                <div id="q-content">
+                    <!-- 移除了顯示類型的 q-tag -->
+                    <div id="q-text" class="question-text">題目載入中...</div>
+                </div>
+                
+                <div class="options-grid">
+                    <!-- 修改處：移除 inline style，讓它們統一使用 CSS class 的設定 -->
+                    <button class="option-btn" onclick="answer(1)">
+                        非常不符合 <span class="option-score">1</span>
+                    </button>
+                    <button class="option-btn" onclick="answer(2)">
+                        有點不符合 <span class="option-score">2</span>
+                    </button>
+                    <button class="option-btn" onclick="answer(3)">
+                        有點符合 <span class="option-score">3</span>
+                    </button>
+                    <button class="option-btn" onclick="answer(4)">
+                        非常符合 <span class="option-score">4</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Loading Page -->
+        <div id="page-loading" class="page" style="justify-content: center; align-items: center;">
+            <div class="loader"></div>
+            <p style="margin-top: 24px; color: var(--text-secondary); font-weight: 500;">正在調配化學公式...</p>
+        </div>
+
+        <!-- 4. Result Page -->
+        <div id="page-result" class="page">
+            <div class="result-scroll">
+                <div class="result-card">
+                    <div id="result-code" class="type-code">CODE: ----</div>
+                    <h2 id="result-title" class="type-title">載入中...</h2>
+                    
+                    <!-- SVG Radar Chart -->
+                    <div class="radar-container">
+                        <svg class="radar-svg" viewBox="0 0 100 100">
+                            <!-- Background Grid -->
+                            <polygon points="50,10 90,50 50,90 10,50" fill="none" stroke="#E8DED8" stroke-width="1"/>
+                            <polygon points="50,30 70,50 50,70 30,50" fill="none" stroke="#E8DED8" stroke-width="1"/>
+                            <line x1="50" y1="10" x2="50" y2="90" stroke="#E8DED8" stroke-width="1"/>
+                            <line x1="10" y1="50" x2="90" y2="50" stroke="#E8DED8" stroke-width="1"/>
+                            
+                            <!-- Labels -->
+                            <text x="50" y="8" fill="#2E7D73" font-size="6" font-weight="bold" text-anchor="middle">R 現實</text>
+                            <text x="96" y="52" fill="#8E44AD" font-size="6" font-weight="bold" text-anchor="middle">D 夢想</text>
+                            <text x="50" y="98" fill="#F59E0B" font-size="6" font-weight="bold" text-anchor="middle">H 幽默</text>
+                            <text x="4" y="52" fill="#EC5E6D" font-size="6" font-weight="bold" text-anchor="middle">S 敏感</text>
+
+                            <!-- The Data Polygon -->
+                            <polygon id="radar-poly" points="50,50 50,50 50,50 50,50" fill="rgba(46, 125, 115, 0.2)" stroke="#2E7D73" stroke-width="2"/>
+                        </svg>
+                    </div>
+
+                    <div id="lin-quote" class="lin-quote">
+                        "..."
+                    </div>
+
+                    <div id="desc-box" class="desc-box">
+                        分析內容...
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Reality 現實</span>
+                        <span id="score-r" class="stat-value" style="color: var(--accent-r);">0.0</span>
+                        <div class="stat-bar"><div id="bar-r" class="stat-fill" style="background: var(--accent-r); width: 0%"></div></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Dreams 夢想</span>
+                        <span id="score-d" class="stat-value" style="color: var(--accent-d);">0.0</span>
+                        <div class="stat-bar"><div id="bar-d" class="stat-fill" style="background: var(--accent-d); width: 0%"></div></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Humor 幽默</span>
+                        <span id="score-h" class="stat-value" style="color: var(--accent-h);">0.0</span>
+                        <div class="stat-bar"><div id="bar-h" class="stat-fill" style="background: var(--accent-h); width: 0%"></div></div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Sensibility 敏感</span>
+                        <span id="score-s" class="stat-value" style="color: var(--accent-s);">0.0</span>
+                        <div class="stat-bar"><div id="bar-s" class="stat-fill" style="background: var(--accent-s); width: 0%"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <button class="btn btn-outline" style="margin:0; width: 40%;" onclick="showGallery()">查看全圖鑑</button>
+                <button class="btn" style="width: 60%; margin:0;" onclick="location.reload()">重新測驗</button>
+            </div>
+        </div>
+
+        <!-- 5. Gallery Page -->
+        <div id="page-gallery" class="page">
+            <div style="flex:1; overflow-y:auto; padding-bottom:80px;">
+                <h2 style="margin-bottom:16px;">全類型圖鑑 (16型)</h2>
+                <div id="gallery-container" class="gallery-list">
+                    <!-- Items injected by JS -->
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="btn" onclick="backToResult()">返回結果</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. Data: Questions (已擴充至16題，並恢復描述性風格) ---
+        // 原始12題 + 新增4題
+        const rawQuestions = [
+            // R: 現實感
+            { type: 'R', text: "比起抽象的理論或願景，我更在意這件事能不能賺錢，或對生活有沒有實際幫助。" },
+            { type: 'R', text: "遇到問題時，我習慣先考慮風險和執行難度，而不是先談論理想狀況。" },
+            { type: 'R', text: "我擅長處理生活瑣事（如記帳、家務、行程安排），並覺得這能帶來踏實感。" },
+            { type: 'R', text: "我認為『識時務者為俊傑』，在不可抗力面前，妥協往往比堅持更有智慧。" }, // 新增
+            
+            // D: 夢想
+            { type: 'D', text: "我常對現狀感到不滿，總覺得社會制度或周遭環境應該要徹底改變。" },
+            { type: 'D', text: "我很容易被宏大的使命、熱血的口號或完美的烏托邦願景所感動。" },
+            { type: 'D', text: "為了追求心中的理想，即使要付出巨大的代價或走彎路，我也在所不惜。" },
+            { type: 'D', text: "我經常想像如果歷史走向不同，或是如果有一種新的科技，世界會變得多麼美好。" }, // 新增
+
+            // H: 幽默
+            { type: 'H', text: "當我犯蠢或跌倒時，我第一反應通常是覺得自己很好笑，而不是感到羞憤。" },
+            { type: 'H', text: "我認為人生本來就帶點荒謬，太過正經嚴肅地看待一切是很累人的。" },
+            { type: 'H', text: "在緊張或悲傷的氣氛中，我仍能看出事情滑稽或諷刺的一面，並讓心情放鬆。" },
+            { type: 'H', text: "我不喜歡那種這輩子連一次『傻事』都沒做過的正經人，完美往往意味著無趣。" }, // 新增
+
+            // S: 敏感
+            { type: 'S', text: "看到美麗的景色、藝術作品或感人的電影，我常會深受觸動甚至落淚。" },
+            { type: 'S', text: "我對他人的情緒變化很敏感，常能察覺對方沒說出口的心事。" },
+            { type: 'S', text: "我認為邏輯正確固然重要，但「美的感受」和「人情味」更不可或缺。" },
+            { type: 'S', text: "讀到一首好詩或聽到一段動人的旋律，會讓我整天的心情都染上那種色彩。" } // 新增
+        ];
+
+        let questions = []; // Will be shuffled
+
+        // --- 2. Data: 16 Types ---
+        const archetypes = {
+            "RDHS": { title: "全能文藝復興人", quote: "這簡直是人類進化的奇蹟。如果他不是神，那肯定是一個快樂的天才。", desc: "極為罕見的完美平衡。你有商人的精明、革命家的理想、喜劇演員的豁達，還有詩人的細膩。" },
+            "RDHs": { title: "冷靜的變革者", quote: "他能笑著把舊制度推翻。雖然他可能看不懂印象派的畫，但這不妨礙他成為偉人。", desc: "你有改變世界的手段與野心，也有幽默感來化解壓力。唯獨缺乏一點敏感度。" },
+            "RDhS": { title: "悲情的苦行僧", quote: "他背負著世界的十字架。我很尊敬他，但不想成為他，因為『心痛』是他的常態。", desc: "你看清現實又懷抱理想，且高敏感讓你對世間痛苦感同身受。因缺乏幽默感，活得沉重。" },
+            "RDhs": { title: "焦慮的進取者", quote: "他把人生當成一場必須贏的比賽。他需要休息，但我懷疑他連睡覺時都在算業績。", desc: "現實與夢想激烈拔河。你極度渴望成功，執行力強，但缺乏幽默與敏感的潤滑。" },
+            "RdHS": { title: "人間煙火大師", quote: "他知道二鳥在林不如一鳥在手，而且他還知道怎麼把手裡那隻鳥烹調得美味無比。", desc: "放棄了空泛的理想，專注於「活在當下」。極高的生活品味與幽默感，是最懂過日子的人。" },
+            "RdHs": { title: "精明的現實主義者", quote: "他是社會穩定的基石。雖然你很難從他那裡得到眼淚，但他會給你最中肯的建議。", desc: "務實、不信空談。你的幽默感通常是用來嘲笑那些不切實際的人。情緒穩定，維護現狀的高手。" },
+            "RdhS": { title: "守舊的工匠", quote: "一個沈默而可靠的朋友。他的世界很小，但很精緻。", desc: "安分守己，專注當下。不白日夢也不開玩笑，但對細節有驚人的敏感度。" },
+            "Rdhs": { title: "無情的運算機", quote: "這接近生物學上的『單純生存』。朋友，稍微喝點酒吧，你需要一點混亂來證明你活著！", desc: "摒棄了夢想、幽默和情感，只剩下純粹的生存與邏輯。像機器一樣高效。" },
+            "rDHS": { title: "失控的夢遊者", quote: "他正忙著在雲端上蓋樓閣，而且他還真的以為那裡可以住人。多麼迷人的瘋子！", desc: "除了不顧現實，其他數值都爆表。才華洋溢，充滿奇思妙想，個性瘋癲可愛。" },
+            "rDHs": { title: "快樂的空想家", quote: "他是最好的談資製造者。只要不讓他去執行計畫，一切都會很美好。", desc: "你有很多理論，說起來頭頭是道且風趣，但從未付諸行動。不敏感所以不怕被打臉。" },
+            "rDhS": { title: "憂鬱的浪漫騎士", quote: "一個美麗但易碎的靈魂。他需要一個強壯的保姆來照顧他的生活起居。", desc: "純粹的理想主義者。現實的粗糙刺痛你敏感的神經，又缺乏幽默感當盾牌。" },
+            "rDhs": { title: "狂熱的信徒", quote: "他太正經了。他眼裡只有目標，看不見路邊的花，也看不見被他踩到的腳。", desc: "缺乏反省的幽默，也不具備同理心。只執著於你的「真理」，容易走極端。" },
+            "rdHS": { title: "通透的隱士", quote: "這就是所謂的『道』。他什麼都不做，卻好像什麼都得到了。", desc: "既不爭名奪利，也不為五斗米折腰。擁有高智慧與審美，選擇心靈避世。" },
+            "rdHs": { title: "快樂的虛無主義者", quote: "他是一個快樂的軟木塞，在人生的波浪上隨波逐流，永遠不會沉下去。", desc: "不在乎物質，沒有遠大抱負。唯一的武器是幽默，把人生當成一場荒謬的笑話。" },
+            "rdhS": { title: "迷途的羔羊", quote: "他像是一朵開在牆角的羞怯小花，需要多一點陽光（幽默）與土壤（現實）。", desc: "對世界敏感易受傷，但缺乏改變現狀的能力或動力，也沒有幽默感來排解。" },
+            "rdhs": { title: "一張白紙", quote: "這是一塊未經雕琢的璞玉，或者……就只是一塊石頭？趕快去找點什麼東西來熱愛吧！", desc: "各項數值都低，顯示你可能正處於迷茫期，或者極度簡單。" }
+        };
+
+        // --- 3. Logic ---
+        let currentQIndex = 0;
+        let scores = { R: 0, D: 0, H: 0, S: 0 };
+        const totalQ = rawQuestions.length;
+        let userResultCode = "";
+        let isTransitioning = false; // Fix: Prevent multiple clicks
+
+        // Shuffle Array Helper
+        function shuffle(array) {
+            let currentIndex = array.length,  randomIndex;
+            // While there remain elements to shuffle.
+            while (currentIndex != 0) {
+                // Pick a remaining element.
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                // And swap it with the current element.
+                [array[currentIndex], array[randomIndex]] = [
+                array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function startQuiz() {
+            // Reset state
+            currentQIndex = 0;
+            scores = { R: 0, D: 0, H: 0, S: 0 };
+            isTransitioning = false;
+            
+            // Randomize questions
+            questions = shuffle([...rawQuestions]); // Copy and shuffle
+            
+            switchPage('page-quiz');
+            renderQuestion();
+        }
+
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function renderQuestion() {
+            // Safety check for out of bounds
+            if (currentQIndex >= questions.length) {
+                console.warn("Attempted to render question out of bounds");
+                return;
+            }
+
+            const q = questions[currentQIndex];
+            
+            // 更新題目文字
+            document.getElementById('q-text').innerText = q.text;
+            
+            // 移除了更新標籤 (tag) 的程式碼
+
+            const pct = (currentQIndex / totalQ) * 100;
+            document.getElementById('progress-fill').style.width = `${pct}%`;
+        }
+
+        function answer(value) {
+            // Fix: Prevent double clicking
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            const q = questions[currentQIndex];
+            scores[q.type] += value;
+
+            currentQIndex++;
+            if (currentQIndex < totalQ) {
+                const card = document.querySelector('.question-card');
+                card.style.transform = 'scale(0.99)';
+                card.style.opacity = '0.8';
+                
+                setTimeout(() => {
+                    renderQuestion();
+                    card.style.transform = 'scale(1)';
+                    card.style.opacity = '1';
+                    isTransitioning = false; // Reset flag after transition
+                }, 150);
+            } else {
+                finishQuiz();
+                isTransitioning = false; // Reset flag
+            }
+        }
+
+        function finishQuiz() {
+            switchPage('page-loading');
+            setTimeout(calculateAndShowResult, 1200);
+        }
+
+        function calculateAndShowResult() {
+            // Max score per category is 4 * 4 = 16. Avg is sum / 4
+            const avgR = scores.R / 4;
+            const avgD = scores.D / 4;
+            const avgH = scores.H / 4;
+            const avgS = scores.S / 4;
+
+            const rChar = avgR > 2.5 ? 'R' : 'r';
+            const dChar = avgD > 2.5 ? 'D' : 'd';
+            const hChar = avgH > 2.5 ? 'H' : 'h';
+            const sChar = avgS > 2.5 ? 'S' : 's';
+            
+            userResultCode = rChar + dChar + hChar + sChar;
+            const resultData = archetypes[userResultCode];
+
+            document.getElementById('result-code').innerText = userResultCode.split('').join(' ');
+            document.getElementById('result-title').innerText = resultData.title;
+            document.getElementById('lin-quote').innerText = `${resultData.quote}`;
+            document.getElementById('desc-box').innerText = resultData.desc;
+
+            updateStat('r', avgR);
+            updateStat('d', avgD);
+            updateStat('h', avgH);
+            updateStat('s', avgS);
+            drawRadar(avgR, avgD, avgH, avgS);
+
+            switchPage('page-result');
+        }
+
+        function updateStat(type, avg) {
+            const pct = (avg / 4) * 100;
+            document.getElementById(`score-${type}`).innerText = avg.toFixed(1);
+            document.getElementById(`bar-${type}`).style.width = `${pct}%`;
+        }
+
+        function drawRadar(r, d, h, s) {
+            const getPt = (val, axis) => {
+                const len = (val / 4) * 40;
+                if (axis === 'top') return `50,${50 - len}`;
+                if (axis === 'right') return `${50 + len},50`;
+                if (axis === 'bottom') return `50,${50 + len}`;
+                if (axis === 'left') return `${50 - len},50`;
+            };
+
+            const p1 = getPt(r, 'top');
+            const p2 = getPt(d, 'right');
+            const p3 = getPt(h, 'bottom');
+            const p4 = getPt(s, 'left');
+
+            document.getElementById('radar-poly').setAttribute('points', `${p1} ${p2} ${p3} ${p4}`);
+        }
+
+        // --- Gallery Logic (Enhanced with Badges) ---
+        function showGallery() {
+            const container = document.getElementById('gallery-container');
+            container.innerHTML = ""; // Clear existing
+
+            const codes = Object.keys(archetypes).sort();
+
+            codes.forEach(code => {
+                const data = archetypes[code];
+                const isUser = (code === userResultCode);
+                const bgStyle = isUser ? "border: 2px solid var(--accent-r); background: #FAF5F2;" : ""; // Update highlight background
+                
+                // Parse code for badges
+                // R/r D/d H/h S/s
+                const chars = code.split('');
+                const badgesHtml = chars.map(char => {
+                    const isHigh = char === char.toUpperCase();
+                    const letter = char.toUpperCase();
+                    let color = '';
+                    if (letter === 'R') color = 'var(--accent-r)';
+                    if (letter === 'D') color = 'var(--accent-d)';
+                    if (letter === 'H') color = 'var(--accent-h)';
+                    if (letter === 'S') color = 'var(--accent-s)';
+                    
+                    const style = isHigh 
+                        ? `background:${color}; border-color:${color};` 
+                        : `background:transparent; color:${color}; border-color:${color}; opacity: 0.6;`;
+                        
+                    return `<span class="g-badge ${isHigh?'high':'low'}" style="${style}">${letter}${isHigh?'↑':'↓'}</span>`;
+                }).join('');
+
+                const html = `
+                    <div class="gallery-item" style="${bgStyle}" onclick="alert('${data.title}\\n\\n${data.quote}')">
+                        <div class="g-header">
+                            <div class="g-title">${data.title} ${isUser ? '<span style="font-size:12px;color:var(--accent-r);">(你)</span>' : ''}</div>
+                            <div class="g-badges">${badgesHtml}</div>
+                        </div>
+                        <div class="g-desc">${data.desc}</div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+
+            switchPage('page-gallery');
+        }
+
+        function backToResult() {
+            switchPage('page-result');
+        }
+
+    </script>
+</body>
+</html>
