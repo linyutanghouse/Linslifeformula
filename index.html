@@ -166,11 +166,15 @@
 
         /* Review 頁面的 intro-card 需要特殊處理滾動 */
         #page-review .intro-card {
-            overflow-y: auto;
-            margin-bottom: 0; /* 在 flex 佈局中不需要 margin-bottom */
+            /* 修正：移除 padding 並設為 flex column 以便控制內部滾動 */
+            padding: 0;
+            overflow: hidden;
+            margin-bottom: 0; 
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
             border-bottom: none;
+            justify-content: flex-start; /* 內容從上開始 */
+            min-height: 0; /* 關鍵：允許 flex item 縮小 */
         }
 
         .formula-display {
@@ -295,6 +299,19 @@
             font-weight: 700;
             margin-bottom: 32px;
             color: var(--text-primary);
+        }
+
+        /* 新增：題目進度指示器樣式 */
+        .q-indicator {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--accent-r);
+            background: rgba(46, 125, 115, 0.1);
+            padding: 6px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 24px;
+            letter-spacing: 1.5px;
         }
 
         .options-grid {
@@ -645,7 +662,7 @@
             
             <div class="question-card">
                 <div id="q-content">
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                    <div class="q-indicator">
                         QUESTION <span id="q-number">1</span> / <span id="q-total">16</span>
                     </div>
                     <div id="q-text" class="question-text">題目載入中...</div>
@@ -675,9 +692,12 @@
 
         <!-- 3. Review Page -->
         <div id="page-review" class="page">
-            <div class="intro-card" style="flex: 1; overflow: hidden; margin-bottom: 0; border-bottom: none; border-radius: 24px 24px 0 0; padding-bottom: 0;">
-                <div style="overflow-y: auto; width: 100%; padding-bottom: 20px;">
-                    <h2 style="font-size: 24px; margin-bottom: 12px;">答題確認</h2>
+            <!-- 修正後的結構：使用 padding:0 且 min-height:0 配合內部滾動 -->
+            <div class="intro-card" style="padding: 0; margin-bottom: 0; border-bottom: none; border-radius: 24px 24px 0 0; min-height: 0; justify-content: flex-start; align-items: stretch; overflow: hidden;">
+                
+                <!-- 內部滾動容器 -->
+                <div style="flex: 1; overflow-y: auto; padding: 32px; -webkit-overflow-scrolling: touch; width: 100%;">
+                    <h2 style="font-size: 24px; margin-bottom: 12px; margin-top: 0;">答題確認</h2>
                     <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">
                         請確認您的答題狀況。點擊題號可返回修改。<br>
                         <span style="color:var(--success)">● 已答</span> / <span style="color:var(--text-primary)">○ 未答</span>
