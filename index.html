@@ -61,8 +61,9 @@
             font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-primary);
+            /* 使用 100dvh (Dynamic Viewport Height) 解決手機網址列遮擋問題 */
             height: 100vh;
-            /* 保持 body hidden，由 .page 負責捲動 */
+            height: 100dvh; 
             overflow: hidden; 
             display: flex;
             flex-direction: column;
@@ -110,25 +111,32 @@
             flex-direction: column;
             animation: fadeIn 0.4s ease-out;
             position: relative; 
-            /* 修改：允許垂直捲動，解決小螢幕無法下滑的問題 */
             overflow-y: auto; 
-            -webkit-overflow-scrolling: touch; /* iOS 平滑捲動 */
-            padding-bottom: 20px; /* 底部留白 */
+            -webkit-overflow-scrolling: touch; 
+            padding-bottom: 20px; 
+            /* 確保頁面本身不會超出容器 */
+            max-height: 100%;
         }
         
-        /* 隱藏 Scrollbar 但保持功能 (Chrome/Safari/Webkit) */
-        .page::-webkit-scrollbar {
-            display: none;
+        /* 針對 Result 和 Review 頁面使用 Flexbox 佈局，解決底部遮擋問題 */
+        #page-result.page, #page-gallery.page, #page-review.page {
+            display: none; /* active 時會被覆蓋為 flex */
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden; /* 內部滾動 */
+            padding-bottom: 0;
         }
-        /* 隱藏 Scrollbar (Firefox) */
-        .page {
-            scrollbar-width: none;
+        
+        #page-result.page.active, #page-gallery.page.active, #page-review.page.active {
+            display: flex;
         }
 
-        /* 特殊處理：結果頁和圖鑑頁因為有內部捲動區域，外層不捲動 */
-        #page-result.page, #page-gallery.page {
-            overflow-y: hidden;
-            padding-bottom: 0;
+        /* 隱藏 Scrollbar 但保持功能 */
+        .page::-webkit-scrollbar, .result-scroll::-webkit-scrollbar, .gallery-list::-webkit-scrollbar {
+            display: none;
+        }
+        .page, .result-scroll, .gallery-list {
+            scrollbar-width: none;
         }
 
         .page.active {
@@ -145,8 +153,8 @@
             background: var(--card-bg);
             border-radius: var(--radius-lg);
             padding: 32px;
-            flex: 1; /* 佔滿剩餘空間，但允許被撐開 */
-            min-height: min-content; /* 確保內容不會被切掉 */
+            flex: 1; 
+            min-height: min-content; 
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -154,6 +162,15 @@
             box-shadow: var(--shadow);
             border: var(--border);
             margin-bottom: 20px;
+        }
+
+        /* Review 頁面的 intro-card 需要特殊處理滾動 */
+        #page-review .intro-card {
+            overflow-y: auto;
+            margin-bottom: 0; /* 在 flex 佈局中不需要 margin-bottom */
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom: none;
         }
 
         .formula-display {
@@ -218,6 +235,7 @@
             transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
             text-align: center;
             box-shadow: 0 4px 10px rgba(93, 64, 55, 0.15);
+            margin-top: 12px;
         }
 
         .btn:active {
@@ -262,16 +280,14 @@
             border-radius: var(--radius-lg);
             padding: 32px 24px;
             flex: 1;
-            min-height: min-content; /* 確保不被壓縮 */
+            min-height: min-content; 
             display: flex;
             flex-direction: column;
-            justify-content: center; /* 改為置中，因為沒有標籤了 */
+            justify-content: center; 
             position: relative;
             box-shadow: var(--shadow);
             border: var(--border);
         }
-
-        /* 移除了 .q-tag 相關樣式 */
 
         .question-text {
             font-size: 20px;
@@ -300,9 +316,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer; /* Ensure pointer on desktop */
+            cursor: pointer; 
         }
-        /* Disable interaction when disabled */
+        
         .option-btn:disabled {
             cursor: not-allowed;
             opacity: 0.6;
@@ -329,7 +345,6 @@
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            /* 修改處：統一色調樣式 - 暖灰色 */
             background: #E8DED8; 
             color: var(--text-secondary);
             font-size: 12px;
@@ -410,15 +425,13 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
 
-        /* --- 結果頁 --- */
+        /* --- 結果頁 (Result Page) --- */
+        /* 修改：使用 Flexbox 讓滾動區與底部按鈕自然分割 */
         .result-scroll {
-            overflow-y: auto;
-            flex: 1;
-            padding-bottom: 100px; /* Space for fixed button */
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+            flex: 1; /* 自動佔滿剩餘空間 */
+            overflow-y: auto; /* 超出時顯示滾動條 */
+            padding-bottom: 24px; /* 內容底部的呼吸空間 */
         }
-        .result-scroll::-webkit-scrollbar { display: none; }
 
         .result-card {
             background: var(--card-bg);
@@ -504,22 +517,24 @@
             margin-bottom: 20px;
         }
 
+        /* 修改：Action Bar 不再是 Absolute，而是 Flex Item */
         .action-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
+            position: relative; /* 回歸自然文檔流 */
             width: 100%;
-            padding: 20px 24px;
-            background: rgba(253, 248, 245, 0.95); /* 配合背景色的半透明 */
-            backdrop-filter: blur(5px);
+            padding: 20px 0; /* 左右不需要 padding，因為外層 container 已經有 padding */
+            background: transparent; 
             display: flex;
             gap: 12px;
             border-top: 1px solid var(--element-border);
+            flex-shrink: 0; /* 防止按鈕被壓縮 */
+            margin-top: auto; /* 確保推到底部 */
         }
 
         /* --- 全圖鑑頁 (Gallery) --- */
         .gallery-list {
-            padding-bottom: 20px;
+            flex: 1; /* 佔滿空間 */
+            overflow-y: auto;
+            padding-bottom: 24px;
         }
 
         .gallery-item {
@@ -658,25 +673,29 @@
             </div>
         </div>
 
-        <!-- 3. Review Page (New) -->
+        <!-- 3. Review Page -->
         <div id="page-review" class="page">
-            <div class="intro-card" style="justify-content: flex-start; padding-top: 40px; overflow-y: auto;">
-                <h2 style="font-size: 24px; margin-bottom: 12px;">答題確認</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">
-                    請確認您的答題狀況。點擊題號可返回修改。<br>
-                    <span style="color:var(--success)">● 已答</span> / <span style="color:var(--text-primary)">○ 未答</span>
-                </p>
+            <div class="intro-card" style="flex: 1; overflow: hidden; margin-bottom: 0; border-bottom: none; border-radius: 24px 24px 0 0; padding-bottom: 0;">
+                <div style="overflow-y: auto; width: 100%; padding-bottom: 20px;">
+                    <h2 style="font-size: 24px; margin-bottom: 12px;">答題確認</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">
+                        請確認您的答題狀況。點擊題號可返回修改。<br>
+                        <span style="color:var(--success)">● 已答</span> / <span style="color:var(--text-primary)">○ 未答</span>
+                    </p>
 
-                <div id="review-grid" class="review-grid">
-                    <!-- JS Injected -->
+                    <div id="review-grid" class="review-grid">
+                        <!-- JS Injected -->
+                    </div>
+
+                    <div id="review-alert" style="color: #E53935; font-size: 13px; margin-bottom: 16px; display: none;">
+                        還有題目未完成，請先完成所有題目！
+                    </div>
                 </div>
-
-                <div id="review-alert" style="color: #E53935; font-size: 13px; margin-bottom: 16px; display: none;">
-                    還有題目未完成，請先完成所有題目！
-                </div>
-
-                <button class="btn" onclick="calculateAndShowResult()">確認提交</button>
-                <button class="btn btn-outline" onclick="backToQuizFromReview()">返回繼續作答</button>
+            </div>
+            
+            <div class="action-bar" style="background: var(--card-bg); border-top: 1px solid var(--border); padding: 20px 24px;">
+                <button class="btn" style="margin: 0; width: 60%;" onclick="calculateAndShowResult()">確認提交</button>
+                <button class="btn btn-outline" style="margin: 0; width: 40%;" onclick="backToQuizFromReview()">返回</button>
             </div>
         </div>
 
@@ -703,10 +722,10 @@
                             <line x1="10" y1="50" x2="90" y2="50" stroke="#E8DED8" stroke-width="1"/>
                             
                             <!-- Labels -->
-                            <text x="50" y="8" fill="#2E7D73" font-size="6" font-weight="bold" text-anchor="middle">現實</text>
-                            <text x="96" y="52" fill="#8E44AD" font-size="6" font-weight="bold" text-anchor="middle">夢想</text>
-                            <text x="50" y="98" fill="#F59E0B" font-size="6" font-weight="bold" text-anchor="middle">幽默</text>
-                            <text x="4" y="52" fill="#EC5E6D" font-size="6" font-weight="bold" text-anchor="middle">敏感</text>
+                            <text x="50" y="8" fill="#2E7D73" font-size="6" font-weight="bold" text-anchor="middle">R 現實</text>
+                            <text x="96" y="52" fill="#8E44AD" font-size="6" font-weight="bold" text-anchor="middle">D 夢想</text>
+                            <text x="50" y="98" fill="#F59E0B" font-size="6" font-weight="bold" text-anchor="middle">H 幽默</text>
+                            <text x="4" y="52" fill="#EC5E6D" font-size="6" font-weight="bold" text-anchor="middle">S 敏感</text>
 
                             <!-- The Data Polygon -->
                             <polygon id="radar-poly" points="50,50 50,50 50,50 50,50" fill="rgba(46, 125, 115, 0.2)" stroke="#2E7D73" stroke-width="2"/>
@@ -808,22 +827,22 @@
 
         // --- 2. Data: 16 Types ---
         const archetypes = {
-            "RDHS": { title: "全能文藝復興人", quote:"「我們未嘗不可說，蘇東坡是個秉性難改的樂天派……是釀酒的實驗者，是工程師。」——林語堂，《蘇東坡傳》", desc: "極為罕見的完美平衡。你有商人的精明、革命家的理想、喜劇演員的豁達，還有詩人的細膩。" },
-            "RDHs": { title: "冷靜的變革者", quote:"「我不做夢，希望中國政治人才輩出，只希望有一位差強人意，說話靠得住的官僚。」——林語堂，〈中國之夢〉", desc: "你有改變世界的手段與野心，也有幽默感來化解壓力。唯獨缺乏一點敏感度。" },
-            "RDhS": { title: "悲情的苦行僧", quote:"「精神的歡樂和身體的歡樂是不可分離的。」——林語堂，《生活的藝術》", desc: "你看清現實又懷抱理想，且高敏感讓你對世間痛苦感同身受。因缺乏幽默感，活得沉重。" },
-            "RDhs": { title: "焦慮的進取者", quote:"「人類為生活如此匆忙，這隻野獸一定會對這個人類社會發生很大的疑惑和驚奇。」——林語堂，《生活的藝術》。", desc: "現實與夢想激烈拔河。你極度渴望成功，執行力強，但缺乏幽默與敏感的潤滑。" },
-            "RdHS": { title: "人間煙火大師", quote:"「所怕的就是他將重視照片，而忘卻了茶味。」——林語堂，〈旅行的享受〉", desc: "放棄了空泛的理想，專注於「活在當下」。極高的生活品味與幽默感，是最懂過日子的人。" },
-            "RdHs": { title: "精明的現實主義者", quote:"「錢很重要，這話還待我說嗎？」，林語堂—〈論利〉", desc: "務實、不信空談。你的幽默感通常是用來嘲笑那些不切實際的人。情緒穩定，維護現狀的高手。" },
-            "RdhS": { title: "守舊的工匠", quote: "「旅行在從前是行樂之一，但現在已變成一種實業……旅行到了現代，似乎已是一種沒落的藝術。」——林語堂，〈旅行的享受〉, desc: "安分守己，專注當下。不白日夢也不開玩笑，但對細節有驚人的敏感度。" },
-            "Rdhs": { title: "無情的運算機", quote:"「寧可我來弄計算機，不可讓計算機計算我。！」——林語堂，〈談計算機〉", desc: "摒棄了夢想、幽默和情感，只剩下純粹的生存與邏輯。像機器一樣高效。" },
-            "rDHS": { title: "失控的夢遊者", quote:"「如果人類的心智是高貴的，那麼我們將變成完全理性的動物，沒有罪惡，沒有弱點，也沒有錯誤的行為！如果真是這樣的話，這世界將變成一個多麼乏味的世界！」——林語堂，《生活的藝術》", desc: "除了不顧現實，其他數值都爆表。才華洋溢，充滿奇思妙想，個性瘋癲可愛。" },
-            "rDHs": { title: "快樂的空想家", quote:"「科學家無法告訴我們一切事情，無法告訴我要的事情，就是那些製這快樂的事情，於是我不得不去請教bon sens 這一個十八世紀的字是值得復興的。」——林語堂，《我的信仰》", desc: "你有很多理論，說起來頭頭是道且風趣，但從未付諸行動。不敏感所以不怕被打臉。" },
-            "rDhS": { title: "憂鬱的浪漫騎士", quote:"「一個人難道不該有受到深深感動而流淚的時候？。」——林語堂，〈看電影流淚〉" desc: "你是那種把理想當真、也把日子看得太認真的人。現實一向手糙，碰一下就疼；偏偏你又不常借幽默這把小傘，替自己遮些風雨。" },
-            "rDhs": { title: "狂熱的信徒", quote:"「形式也只是一種工具，是否有價值在於自己能否與宗教建立友誼的關係。」——林語堂，《信仰之旅》", desc: "有時他的幽默比較像直覺反應，未必總記得回頭照一照自己；同理心也不是他最擅長的語言。於是他一旦認定某個真理，就容易走得太認真、太用力。" },
-            "rdHS": { title: "通透的隱士", quote:"「大自然本身永遠是一個療養院。它即使不能治癒別的疾病，但至少能治癒人類的自大狂。」——林語堂，《生活的藝術》", desc: "既不爭名奪利，也不為五斗米折腰。聰明與審美都在身上，只是更傾向把它們拿去照看內心，而不是拿去換掌聲。" },
-            "rdHs": { title: "快樂的虛無主義者", quote:"「觀看景物和觀看虛無，有極大的區別。有許多特去觀看景物的，其實並沒有看到甚麼景物，但有許多去觀看虛無的，倒反而能看到許多事物。」——林語堂，〈旅行的享受〉", desc: "不在乎物質，志向也不愛寫成大字報。若說有什麼武器，就是把幽默——把人生看成一齣喜劇，笑一笑，好讓自己不被世界的嚴肅壓扁。" },
-            "rdhS": { title: "迷途的羔羊", quote:"「我們幼時的那些夢想不是沒有實現性的。這些夢想常和我們終身共存著。」——林語堂，《生活的藝術》。", desc: "對世界很敏感，容易被細小的刺扎到；只是改變現狀這件事，他未必有足夠的力氣或動力。若偏偏又忘了用幽默替自己鬆綁，便只好把受傷默默收進口袋裡。" },
-            "rdhs": { title: "一張白紙", quote:"「人必有痴，而後有成。」——林語堂", desc: "你也許正走在一段迷霧裡；又或者，你只是更懂得把生活過得簡單。" }
+            "RDHS": { title: "全能文藝復興人", quote: "「我們未嘗不可說，蘇東坡是個秉性難改的樂天派……是釀酒的實驗者，是工程師。」——林語堂，《蘇東坡傳》", desc: "極為罕見的完美平衡。你有商人的精明、革命家的理想、喜劇演員的豁達，還有詩人的細膩。" },
+            "RDHs": { title: "冷靜的變革者", quote: "「我不做夢，希望中國政治人才輩出，只希望有一位差強人意，說話靠得住的官僚。」——林語堂，〈中國之夢〉", desc: "你有改變世界的手段與野心，也有幽默感來化解壓力。唯獨缺乏一點敏感度。" },
+            "RDhS": { title: "悲情的苦行僧", quote: "「精神的歡樂和身體的歡樂是不可分離的。」——林語堂，《生活的藝術》", desc: "你看清現實又懷抱理想，且高敏感讓你對世間痛苦感同身受。因缺乏幽默感，活得沉重。" },
+            "RDhs": { title: "焦慮的進取者", quote: "「人類為生活如此匆忙，這隻野獸一定會對這個人類社會發生很大的疑惑和驚奇。」——林語堂，《生活的藝術》。", desc: "現實與夢想激烈拔河。你極度渴望成功，執行力強，但缺乏幽默與敏感的潤滑。" },
+            "RdHS": { title: "人間煙火大師", quote: "「所怕的就是他將重視照片，而忘卻了茶味。」——林語堂，〈旅行的享受〉", desc: "放棄了空泛的理想，專注於「活在當下」。極高的生活品味與幽默感，是最懂過日子的人。" },
+            "RdHs": { title: "精明的現實主義者", quote: "「錢很重要，這話還待我說嗎？」，林語堂—〈論利〉", desc: "務實、不信空談。你的幽默感通常是用來嘲笑那些不切實際的人。情緒穩定，維護現狀的高手。" },
+            "RdhS": { title: "守舊的工匠", quote: "「旅行在從前是行樂之一，但現在已變成一種實業……旅行到了現代，似乎已是一種沒落的藝術。」——林語堂，〈旅行的享受〉", desc: "安分守己，專注當下。不白日夢也不開玩笑，但對細節有驚人的敏感度。" },
+            "Rdhs": { title: "無情的運算機", quote: "「寧可我來弄計算機，不可讓計算機計算我。！」——林語堂，〈談計算機〉", desc: "摒棄了夢想、幽默和情感，只剩下純粹的生存與邏輯。像機器一樣高效。" },
+            "rDHS": { title: "失控的夢遊者", quote: "「如果人類的心智是高貴的，那麼我們將變成完全理性的動物，沒有罪惡，沒有弱點，也沒有錯誤的行為！如果真是這樣的話，這世界將變成一個多麼乏味的世界！」", desc: "除了不顧現實，其他數值都爆表。才華洋溢，充滿奇思妙想，個性瘋癲可愛。" },
+            "rDHs": { title: "快樂的空想家", quote: "「科學家無法告訴我們一切事情，無法告訴我要的事情，就是那些製這快樂的事情，於是我不得不去請教bon sens 這一個十八世紀的字是值得復興的。」——林語堂，《我的信仰》", desc: "你有很多理論，說起來頭頭是道且風趣，但從未付諸行動。不敏感所以不怕被打臉。" },
+            "rDhS": { title: "憂鬱的浪漫騎士", quote: "「一個人難道不該有受到深深感動而流淚的時候？。」——林語堂，〈看電影流淚〉", desc: "你是那種把理想當真、也把日子看得太認真的人。現實一向手糙，碰一下就疼；偏偏你又不常借幽默這把小傘，替自己遮些風雨。" },
+            "rDhs": { title: "狂熱的信徒", quote: "「形式也只是一種工具，是否有價值在於自己能否與宗教建立友誼的關係。」——信仰之旅", desc: "有時他的幽默比較像直覺反應，未必總記得回頭照一照自己；同理心也不是他最擅長的語言。於是他一旦認定某個真理，就容易走得太認真、太用力。" },
+            "rdHS": { title: "通透的隱士", quote: "「大自然本身永遠是一個療養院。它即使不能治癒別的疾病，但至少能治癒人類的自大狂。」——林語堂，《生活的藝術》", desc: "既不爭名奪利，也不為五斗米折腰。聰明與審美都在身上，只是更傾向把它們拿去照看內心，而不是拿去換掌聲。" },
+            "rdHs": { title: "快樂的虛無主義者", quote: "「觀看景物和觀看虛無，有極大的區別。有許多特去觀看景物的，其實並沒有看到甚麼景物，但有許多去觀看虛無的，倒反而能看到許多事物。」——林語堂，〈旅行的享受〉", desc: "不在乎物質，志向也不愛寫成大字報。若說有什麼武器，就是把幽默——把人生看成一齣喜劇，笑一笑，好讓自己不被世界的嚴肅壓扁。" },
+            "rdhS": { title: "迷途的羔羊", quote: "「我們幼時的那些夢想不是沒有實現性的。這些夢想常和我們終身共存著。」——林語堂，《生活的藝術》。", desc: "對世界很敏感，容易被細小的刺扎到；只是改變現狀這件事，他未必有足夠的力氣或動力。若偏偏又忘了用幽默替自己鬆綁，便只好把受傷默默收進口袋裡。" },
+            "rdhs": { title: "一張白紙", quote: "「人必有痴，而後有成。」——林語堂", desc: "你也許正走在一段迷霧裡；又或者，你只是更懂得把生活過得簡單。" }
         };
 
         // --- 3. Logic ---
@@ -1098,5 +1117,3 @@
     </script>
 </body>
 </html>
-
-
